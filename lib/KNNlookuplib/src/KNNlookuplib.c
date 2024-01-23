@@ -1,0 +1,341 @@
+/* --------------------------------------------------------------------------- *\
+							Private functions
+\* --------------------------------------------------------------------------- */
+
+# include "KNNlookuplib.h"
+
+// Calculates the squared Euclidean distance between two points.
+// @param point1: The first point (array of doubles).
+// @param point2: The second point (array of doubles).
+// @param Ncv: The number of control variables (dimensions of the points).
+// @return: The squared Euclidean distance between point1 and point2.
+double distanceSquared
+(
+    double point1[], 
+	double point2[], 
+	int Ncv
+)
+{
+    double dist = 0.0;
+    // Loop over each dimension and add the squared difference
+    // between the coordinates to the total distance.
+    for (int i = 0; i < Ncv; i++) {
+        double diff = point1[i] - point2[i];
+        dist += diff * diff;
+    }
+    return dist;  // Return the total squared distance
+}
+
+// Create a new NeighborHeap with the specified capacity.
+// @param capacity: The maximum capacity of the heap.
+// @return: A pointer to the newly created NeighborHeap, or NULL on failure.
+NeighborHeap* createNeighborHeap
+(
+    int capacity
+)
+{
+    NeighborHeap* heap = (NeighborHeap*)malloc(sizeof(NeighborHeap));
+    if (!heap) return NULL;
+
+    heap->elements = (Neighbor*)malloc(capacity * sizeof(Neighbor));
+    if (!heap->elements) {
+        free(heap);
+        return NULL;
+    }
+
+    heap->size = 0;
+    heap->capacity = capacity;
+    return heap;
+}
+
+// Heapify upwards to maintain the max-heap property after insertion.
+// @param heap: Pointer to the NeighborHeap being modified.
+// @param index: The index at which to start the heapify operation.
+void heapifyUp
+(
+    NeighborHeap* heap, 
+	int index
+)
+{
+    while (index != 0 && heap->elements[index].distance > heap->elements[(index - 1) / 2].distance) {
+        // Swap with parent
+        Neighbor temp = heap->elements[index];
+        heap->elements[index] = heap->elements[(index - 1) / 2];
+        heap->elements[(index - 1) / 2] = temp;
+
+        index = (index - 1) / 2;
+    }
+}
+
+// Heapify downwards to maintain the max-heap property after insertion or replacement.
+// @param heap: Pointer to the NeighborHeap being modified.
+// @param index: The index at which to start the heapify operation.
+void heapifyDown
+(
+    NeighborHeap* heap, 
+	int index
+)
+{
+    int largest = index;
+    int left = 2 * index + 1; 
+    int right = 2 * index + 2;
+
+    if (left < heap->size && heap->elements[left].distance > heap->elements[largest].distance) {
+        largest = left;
+    }
+
+    if (right < heap->size && heap->elements[right].distance > heap->elements[largest].distance) {
+        largest = right;
+    }
+
+    if (largest != index) {
+        // Swap with the larger child
+        Neighbor temp = heap->elements[index];
+        heap->elements[index] = heap->elements[largest];
+        heap->elements[largest] = temp;
+
+        // Recursively heapify the affected subtree
+        heapifyDown(heap, largest);
+    }
+}
+
+// Insert a Neighbor into the NeighborHeap.
+// @param heap: Pointer to the NeighborHeap where the Neighbor is inserted.
+// @param neighbor: The Neighbor to be inserted.
+// @return: true if the insertion was successful, false otherwise.
+bool insertNeighborHeap
+(
+    NeighborHeap* heap, 
+	Neighbor neighbor
+)
+{
+    if (heap->size == heap->capacity) {
+        // Heap is full, replace the top element if the new neighbor is closer (smaller distance)
+        if (neighbor.distance < heap->elements[0].distance) {
+            heap->elements[0] = neighbor;
+            heapifyDown(heap, 0); // Restore heap property
+        }
+    } else {
+        // If the heap is not full, insert the new neighbor and heapify up
+        heap->elements[heap->size] = neighbor;
+        heapifyUp(heap, heap->size);
+        heap->size++;
+    }
+    return true;
+}
+
+// Perform a N nearest neighbor search in the KD Tree.
+// @param root: Pointer to the root node of the KD Tree.
+// @param queryPoint: The query point for which neighbors are searched.
+// @param depth: Current depth in the KD Tree (usually start with 0).
+// @param Ncv: The number of control variables (dimensions).
+// @param heap: Pointer to the NeighborHeap where results are stored.
+void KNNSearch
+(
+    Node* root, 
+	double queryPoint[], 
+	int depth, 
+	int Ncv, 
+	NeighborHeap* heap
+)
+{
+    if (root == NULL) return;
+
+    int cd = depth % Ncv;  // Calculate current dimension based on depth
+
+    // Determine which branch (left or right) is closer to the query point
+    bool goesLeft = queryPoint[cd] < root->point[cd];
+    Node* closerBranch = goesLeft ? root->left : root->right;
+    Node* fartherBranch = goesLeft ? root->right : root->left;
+
+    // First, visit the closer branch
+    KNNSearch(closerBranch, queryPoint, depth + 1, Ncv, heap);
+ 
+    // Calculate distance from the query point to the current node
+    double dist = distanceSquared(queryPoint, root->point, Ncv);
+    
+    // Create a Neighbor struct for the current node
+    Neighbor neighbor = { root, dist };
+
+    // Insert or replace in the heap
+    insertNeighborHeap(heap, neighbor);
+
+    // Check if we need to visit the farther branch
+    double radiusSquared = (queryPoint[cd] - root->point[cd]) * (queryPoint[cd] - root->point[cd]);
+    if (heap->size < heap->capacity || radiusSquared < heap->elements[0].distance) {
+        // Visit the farther branch if there's potential for closer neighbors
+        KNNSearch(fartherBranch, queryPoint, depth + 1, Ncv, heap);
+    }
+}
+
+/* --------------------------------------------------------------------------- *\
+							Public functions
+\* --------------------------------------------------------------------------- */
+
+void normalizeQueryPoint
+(
+    double *queryPoint, 
+	double *mins, 
+	double *maxs, 
+	int Ncv
+)
+{
+    for (int d = 0; d < Ncv; d++) {
+        // Apply min-max normalization to each dimension of the query point
+        queryPoint[d] = (queryPoint[d] - mins[d]) / (maxs[d] - mins[d]);
+    }
+}
+
+void denormalizeQueryPoint
+(
+    double *queryPoint, 
+	double *mins, 
+	double *maxs, 
+	int Ncv
+)
+{
+    for (int d = 0; d < Ncv; d++) {
+        // Apply inverse min-max normalization to each dimension of the query point
+        queryPoint[d] = queryPoint[d] * (maxs[d] - mins[d]) + mins[d];
+    }
+}
+
+void nearestNeighborSearch
+(
+    Node* root, 
+	Neighbor *nearest, 
+	double queryPoint[], 
+	int depth, 
+	int Ncv
+)
+{
+	if (root == NULL) {
+		nearest->node = NULL;
+		nearest->distance = INFINITY;
+		return;
+	}
+
+    int cd = depth % Ncv;  // Calculate current dimension based on depth
+
+    Node* nextBranch = (queryPoint[cd] < root->point[cd]) ? root->left : root->right;
+    Node* otherBranch = (queryPoint[cd] < root->point[cd]) ? root->right : root->left;
+
+	// Recursively search the next branch
+	Neighbor tempNearest;
+	nearestNeighborSearch(nextBranch, &tempNearest, queryPoint, depth + 1, Ncv);
+
+	// Calculate the squared distance from the query point to the current node
+	double dRoot = distanceSquared(queryPoint, root->point, Ncv);
+	double dBest = tempNearest.node ? tempNearest.distance : INFINITY;
+	
+	// Check if the current node is closer than what we have found so far
+	if (dRoot < dBest) {
+		nearest->node = root;
+		nearest->distance = dRoot;
+	} else {
+		nearest->node = tempNearest.node;
+		nearest->distance = dBest;
+	}
+		
+	// Check if we need to search the other branch
+	double radiusSquared = queryPoint[cd] - root->point[cd];
+	radiusSquared *= radiusSquared;
+
+	if (radiusSquared < nearest->distance) {
+		Neighbor otherNearest;
+		nearestNeighborSearch(otherBranch, &otherNearest, queryPoint, depth + 1, Ncv);
+
+		// Update best node if a closer node is found in the other branch
+		if (otherNearest.distance < nearest->distance) {
+			nearest->node = otherNearest.node;
+			nearest->distance = otherNearest.distance;
+		}
+	}
+}
+
+int NNlookupFGM
+(
+    FGM *fgm, 
+	Node *KDTree, 
+	double *x, 
+	double *f
+)
+{
+    // Normalize the query point using the same parameters used for the FGM data
+    normalizeQueryPoint(x, fgm->mins, fgm->maxs, fgm->Ncv);
+
+	// Create instance of neighbor
+    Neighbor* nearest;
+	
+    // Perform the nearest neighbor search in the k-d tree
+    nearestNeighborSearch(KDTree, nearest, x, 0, fgm->Ncv);
+    
+    if (nearest == NULL) {
+        // If no nearest neighbor is found, return failure
+        return EXIT_FAILURE;
+    }
+
+    // Copy the data from the nearest point to the output array 'f'
+    for (int i = 0; i < fgm->Nvar; i++) {
+        f[i] = nearest->node->point[i];
+    }
+
+    return EXIT_SUCCESS;  // Return success after filling the array 'f'
+}
+
+int KNNlookupFGM_Interp
+(
+    FGM *fgm, 
+	Node *KDTree, 
+	double *x, 
+	double *f, 
+	int K
+)
+{
+    // Normalize the query point using the same parameters used for the FGM data
+    normalizeQueryPoint(x, fgm->mins, fgm->maxs, fgm->Ncv);
+    
+    // Create the neighbor heap with capacity K
+    NeighborHeap* neighborHeap = createNeighborHeap(K);
+    if (neighborHeap == NULL) {
+        // Handle the error in case the heap creation failed
+        return EXIT_FAILURE;
+    } 
+	
+	// Perfom N nearest neighbour search and fill the heap
+    KNNSearch(KDTree, x, 0, fgm->Ncv, neighborHeap);
+
+    // Variables to store the weighted sum and total weight
+    double weightedSum[fgm->Nvar];
+    double totalWeight = 0.0;
+
+    // Initialize weightedSum to 0
+    for (int i = 0; i < fgm->Nvar; i++) {
+        weightedSum[i] = 0.0;
+    }
+
+    // Loop through the neighbor heap
+    for (int i = 0; i < neighborHeap->size; i++) {
+        double dist = neighborHeap->elements[i].distance;
+        double weight = 1.0 / (dist + 1e-10); // Adding a small constant to avoid division by zero
+
+        for (int j = 0; j < fgm->Nvar; j++) {
+            weightedSum[j] += neighborHeap->elements[i].node->point[j] * weight;
+        }
+        totalWeight += weight;
+    }
+
+    // Compute the final interpolated values
+    for (int i = 0; i < fgm->Nvar; i++) {
+        f[i] = weightedSum[i] / totalWeight;
+        //printf("Value = %f\n", f[i]);
+    }
+
+    // Free the neighbor heap
+    free(neighborHeap->elements);
+    free(neighborHeap);
+
+    return EXIT_SUCCESS;
+}
+
+// *************************************************************************** //

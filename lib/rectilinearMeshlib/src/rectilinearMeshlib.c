@@ -354,7 +354,7 @@ Mesh createRectilinearMesh_reduced_parallel
 	int progress = 0; // Shared variable for progress tracking
 
     // Enable parallel processing
-	#pragma omp parallel for private(variables, queryPoint, nearest) shared(tempMesh, mapMesh, progress)
+	#pragma omp parallel for private(variables, queryPoint, nearest) shared(tempMesh, mapMesh, progress,  validPointCount)
 	
     // Populate control variable values for each mesh point
     for (int i = 0; i < totalPoints; i++) {
@@ -399,8 +399,26 @@ Mesh createRectilinearMesh_reduced_parallel
 			// Denormalize the query point back to original
 			denormalizeQueryPoint(queryPoint, fgm->mins, fgm->maxs, fgm->Ncv);
 			
-			// Add this point to tempMesh and increment validPointCount
+			// Add this point to tempMesh
+			int localValidPointCount; // Local variable to store the current valid point count
+			#pragma omp critical
+			{
+				localValidPointCount = validPointCount;
+				validPointCount++;
+			}
+
 			for (int k = 0; k < totalVars; k++) {
+				if (k < dimensions) {
+					tempMesh[localValidPointCount * totalVars + k] = queryPoint[k];
+				} else {
+					tempMesh[localValidPointCount * totalVars + k] = variables[k];
+				}
+			}
+
+			mapMesh[i * (dimensions + 1) + dimensions] = localValidPointCount; // Adjusted for 0-based indexing
+		
+			// Add this point to tempMesh and increment validPointCount
+			/*for (int k = 0; k < totalVars; k++) {
 				if (k < dimensions){
 					tempMesh[validPointCount * totalVars + k] = queryPoint[k];
 				}
@@ -410,7 +428,7 @@ Mesh createRectilinearMesh_reduced_parallel
 			}
 			validPointCount++;
 			
-			mapMesh[i * (dimensions + 1) + dimensions] = validPointCount - 1; // -1 to adjust for 0-based indexing
+			mapMesh[i * (dimensions + 1) + dimensions] = validPointCount - 1;*/ // -1 to adjust for 0-based indexing
 		} else {
 			// Store -1 in mapMesh to indicate the point is outside the threshold
 			mapMesh[i * (dimensions + 1) + dimensions] = -1;

@@ -36,7 +36,7 @@ int main(void)
 		Node* KDTree;
 	
 		// Read the FGM database
-		fgm = readFGM("data/input/database.fgm");
+		fgm = readFGM("data/input/database.fgm.2D");
 		
 		// Build the KD Tree
 		KDTree = buildKDTree(fgm);

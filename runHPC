@@ -1,0 +1,22 @@
+#!/bin/bash
+
+#SBATCH --partition=mech.pf.q
+#SBATCH --job-name=CLtoRL
+#SBATCH --nodes=1
+#SBATCH --ntasks=64
+#SBATCH --exclude=mech-computeA008,mech-computeB004
+#SBATCH --time=140:00:00
+#SBATCH --error=slurm-%j.err
+#SBATCH --output=slurm-%j.out
+#SBATCH --mail-type=ALL
+#SBATCH --mail-user=s.n.j.schepers@student.tue.nl
+
+echo "Converting curvilinear mesh to rectilinear mesh..."
+
+./FGM_PC_to_RL > FGM_PC_to_RL.log
+
+echo "Converting Mesh Completed!"
+
+exit 0
+
+#-----------------------------------------------------------------------------

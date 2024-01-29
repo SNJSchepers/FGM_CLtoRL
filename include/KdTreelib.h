@@ -11,7 +11,7 @@
 
 // Structure representing a node in the K-D Tree
 typedef struct Node {
-    double *point; // Pointer to the point in FGM data array
+    float *point; // Pointer to the point in FGM data array
     struct Node *left, *right;
 } Node;
 

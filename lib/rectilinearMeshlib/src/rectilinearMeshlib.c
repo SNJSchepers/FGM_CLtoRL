@@ -22,10 +22,10 @@ Mesh createRectilinearMesh
     }
     int meshSize = totalPoints * totalVars;  // meshSize
     
-    double *mesh = (double *)malloc(meshSize * sizeof(double));
-	double *meshMin = (double *)malloc(dimensions * sizeof(double));
-	double *meshMax = (double *)malloc(dimensions * sizeof(double));
-    double variables[totalVars];
+    float *mesh = (float *)malloc(meshSize * sizeof(float));
+	float *meshMin = (float *)malloc(dimensions * sizeof(float));
+	float *meshMax = (float *)malloc(dimensions * sizeof(float));
+    float variables[totalVars];
 
     // Populate control variable values for each mesh point
     for (int i = 0; i < totalPoints; i++) {
@@ -35,15 +35,15 @@ Mesh createRectilinearMesh
         
         int idx = i * totalVars; // Index in the mesh array for the ith point
         
-		double queryPoint[dimensions]; // Fill this with the control variables for the current mesh point
+		float queryPoint[dimensions]; // Fill this with the control variables for the current mesh point
 		
         // Calculate the control variable values for this point
         for (int j = 0; j < dimensions; j++) {
-            double range = fgm->maxs[j] - fgm->mins[j];
-            meshMin[j] = fgm->mins[j] - 0.1 * range;
-            meshMax[j] = fgm->maxs[j] + 0.1 * range;
-            double extendedRange = meshMax[j] - meshMin[j];
-            double delta = extendedRange / (Ngrid[j] - 1);
+            float range = fgm->maxs[j] - fgm->mins[j];
+            meshMin[j] = fgm->mins[j] - 0.05 * range;
+            meshMax[j] = fgm->maxs[j] + 0.05 * range;
+            float extendedRange = meshMax[j] - meshMin[j];
+            float delta = extendedRange / (Ngrid[j] - 1);
 
             int gridIdx = 0;
             int divider = 1;
@@ -73,12 +73,12 @@ Mesh createRectilinearMesh
 
 	// Allocate and populate the Mesh struct
 	Mesh meshStruct;
-    meshStruct.reducedMesh = (double*)malloc(meshSize * sizeof(double));
+    meshStruct.reducedMesh = (float*)malloc(meshSize * sizeof(float));
 	for (int i = 0; i < meshSize; i++) {
 		meshStruct.reducedMesh[i] = mesh[i];
 	}
-	meshStruct.meshMin = (double*)malloc(dimensions * sizeof(double));
-	meshStruct.meshMax = (double*)malloc(dimensions * sizeof(double));
+	meshStruct.meshMin = (float*)malloc(dimensions * sizeof(float));
+	meshStruct.meshMax = (float*)malloc(dimensions * sizeof(float));
 	for (int i = 0; i < dimensions; i++) {
 		meshStruct.meshMin[i] = meshMin[i];
 		meshStruct.meshMax[i] = meshMax[i];
@@ -110,12 +110,12 @@ Mesh createRectilinearMesh_parallel
     }
     int meshSize = totalPoints * totalVars;   // Mesh size              
     
-    double *mesh = (double *)malloc(meshSize * sizeof(double));
-	double *meshMin = (double *)malloc(dimensions * sizeof(double));
-	double *meshMax = (double *)malloc(dimensions * sizeof(double));
-    double variables[totalVars];
+    float *mesh = (float *)malloc(meshSize * sizeof(float));
+	float *meshMin = (float *)malloc(dimensions * sizeof(float));
+	float *meshMax = (float *)malloc(dimensions * sizeof(float));
+    float variables[totalVars];
 	
-	double queryPoint[dimensions]; // Fill this with the control variables for the current mesh point
+	float queryPoint[dimensions]; // Fill this with the control variables for the current mesh point
 	
 	int progress = 0; // Shared variable for progress tracking
 	
@@ -129,11 +129,11 @@ Mesh createRectilinearMesh_parallel
         
         // Calculate the control variable values for this point
         for (int j = 0; j < dimensions; j++) {
-            double range = fgm->maxs[j] - fgm->mins[j];
-            meshMin[j] = fgm->mins[j] - 0.1 * range;
-            meshMax[j] = fgm->maxs[j] + 0.1 * range;
-            double extendedRange = meshMax[j] - meshMin[j];
-            double delta = extendedRange / (Ngrid[j] - 1);
+            float range = fgm->maxs[j] - fgm->mins[j];
+            meshMin[j] = fgm->mins[j] - 0.05 * range;
+            meshMax[j] = fgm->maxs[j] + 0.05 * range;
+            float extendedRange = meshMax[j] - meshMin[j];
+            float delta = extendedRange / (Ngrid[j] - 1);
 
             int gridIdx = 0;
             int divider = 1;
@@ -173,12 +173,12 @@ Mesh createRectilinearMesh_parallel
 
 	// Allocate and populate the Mesh struct
 	Mesh meshStruct;
-    meshStruct.reducedMesh = (double*)malloc(meshSize * sizeof(double));
+    meshStruct.reducedMesh = (float*)malloc(meshSize * sizeof(float));
 	for (int i = 0; i < meshSize; i++) {
 		meshStruct.reducedMesh[i] = mesh[i];
 	}
-	meshStruct.meshMin = (double*)malloc(dimensions * sizeof(double));
-	meshStruct.meshMax = (double*)malloc(dimensions * sizeof(double));
+	meshStruct.meshMin = (float*)malloc(dimensions * sizeof(float));
+	meshStruct.meshMax = (float*)malloc(dimensions * sizeof(float));
 	for (int i = 0; i < dimensions; i++) {
 		meshStruct.meshMin[i] = meshMin[i];
 		meshStruct.meshMax[i] = meshMax[i];
@@ -196,7 +196,7 @@ Mesh createRectilinearMesh_reduced
 	Node* KDTree, 
 	int *Ngrid, 
 	int K, 
-	double threshold
+	float threshold
 )
 {	
 	printf("\n Building reduced rectilinear mesh...\n\n");
@@ -212,12 +212,12 @@ Mesh createRectilinearMesh_reduced
 	int validPointCount = 0;                           // Initialise the number of valid points
 	
 	int *mapMesh     = (int *)malloc(mapMeshSize * sizeof(int));
-    double *tempMesh = (double *)malloc(tempMeshSize * sizeof(double));
+    float *tempMesh = (float *)malloc(tempMeshSize * sizeof(float));
 	
-	double *meshMin = (double *)malloc(dimensions * sizeof(double));
-	double *meshMax = (double *)malloc(dimensions * sizeof(double));
+	float *meshMin = (float *)malloc(dimensions * sizeof(float));
+	float *meshMax = (float *)malloc(dimensions * sizeof(float));
 	
-	double variables[totalVars];
+	float variables[totalVars];
 
     // Populate control variable values for each mesh point
     for (int i = 0; i < totalPoints; i++) {
@@ -227,15 +227,15 @@ Mesh createRectilinearMesh_reduced
 		
         int idx = i * totalVars; // Index in the mesh array for the ith point
 		
-		double queryPoint[dimensions]; // Fill this with the control variables for the current mesh point
+		float queryPoint[dimensions]; // Fill this with the control variables for the current mesh point
 		
 		// Calculate the control variable values for this point
 		for (int j = 0; j < dimensions; j++) {
 			int N = Ngrid[j];
-			meshMin[j] = fgm->mins[j] - 0.1 * (fgm->maxs[j] - fgm->mins[j]);
-			meshMax[j] = fgm->maxs[j] + 0.1 * (fgm->maxs[j] - fgm->mins[j]);
-			double extendedRange = meshMax[j] - meshMin[j];
-			double delta = extendedRange / (N - 1);
+			meshMin[j] = fgm->mins[j] - 0.05 * (fgm->maxs[j] - fgm->mins[j]);
+			meshMax[j] = fgm->maxs[j] + 0.05 * (fgm->maxs[j] - fgm->mins[j]);
+			float extendedRange = meshMax[j] - meshMin[j];
+			float delta = extendedRange / (N - 1);
 
 			int gridIdx = 0;
 			int divider = 1;
@@ -291,7 +291,7 @@ Mesh createRectilinearMesh_reduced
 
 	// Allocate and populate the Mesh struct
     Mesh meshStruct;
-    meshStruct.reducedMesh = (double*)malloc(validPointCount * totalVars * sizeof(double));
+    meshStruct.reducedMesh = (float*)malloc(validPointCount * totalVars * sizeof(float));
 	for (int i = 0; i < validPointCount * totalVars; i++) {
 		meshStruct.reducedMesh[i] = tempMesh[i];
 	}
@@ -302,8 +302,8 @@ Mesh createRectilinearMesh_reduced
     //meshStruct.mapMesh = mapMesh; // Assuming mapMesh is already allocated
     meshStruct.validPointCount = validPointCount;
 	
-	meshStruct.meshMin = (double*)malloc(dimensions * sizeof(double));
-	meshStruct.meshMax = (double*)malloc(dimensions * sizeof(double));
+	meshStruct.meshMin = (float*)malloc(dimensions * sizeof(float));
+	meshStruct.meshMax = (float*)malloc(dimensions * sizeof(float));
 	for (int i = 0; i < dimensions; i++) {
 		meshStruct.meshMin[i] = meshMin[i];
 		meshStruct.meshMax[i] = meshMax[i];
@@ -325,7 +325,7 @@ Mesh createRectilinearMesh_reduced_parallel
 	Node* KDTree, 
 	int *Ngrid, 
 	int K, 
-	double threshold
+	float threshold
 )
 {	
 	printf("\n Building reduced rectilinear mesh in parallel...\n\n");
@@ -341,13 +341,13 @@ Mesh createRectilinearMesh_reduced_parallel
 	int validPointCount = 0;                           // Initialise the number of valid points
 	
 	int *mapMesh     = (int *)malloc(mapMeshSize * sizeof(int));
-    double *tempMesh = (double *)malloc(tempMeshSize * sizeof(double));
+    float *tempMesh = (float *)malloc(tempMeshSize * sizeof(float));
 	
-	double *meshMin = (double *)malloc(dimensions * sizeof(double));
-	double *meshMax = (double *)malloc(dimensions * sizeof(double));
+	float *meshMin = (float *)malloc(dimensions * sizeof(float));
+	float *meshMax = (float *)malloc(dimensions * sizeof(float));
 	
-	double variables[totalVars];
-	double queryPoint[dimensions];
+	float variables[totalVars];
+	float queryPoint[dimensions];
 	
 	Neighbor nearest; // Create instance of Neighbor struct
 	
@@ -364,10 +364,10 @@ Mesh createRectilinearMesh_reduced_parallel
 		// Calculate the control variable values for this point
 		for (int j = 0; j < dimensions; j++) {
 			int N = Ngrid[j];
-			meshMin[j] = fgm->mins[j] - 0.1 * (fgm->maxs[j] - fgm->mins[j]);
-			meshMax[j] = fgm->maxs[j] + 0.1 * (fgm->maxs[j] - fgm->mins[j]);
-			double extendedRange = meshMax[j] - meshMin[j];
-			double delta = extendedRange / (N - 1);
+			meshMin[j] = fgm->mins[j] - 0.05 * (fgm->maxs[j] - fgm->mins[j]);
+			meshMax[j] = fgm->maxs[j] + 0.05 * (fgm->maxs[j] - fgm->mins[j]);
+			float extendedRange = meshMax[j] - meshMin[j];
+			float delta = extendedRange / (N - 1);
 
 			int gridIdx = 0;
 			int divider = 1;
@@ -448,7 +448,7 @@ Mesh createRectilinearMesh_reduced_parallel
 
 	// Allocate and populate the Mesh struct
     Mesh meshStruct;
-    meshStruct.reducedMesh = (double*)malloc(validPointCount * totalVars * sizeof(double));
+    meshStruct.reducedMesh = (float*)malloc(validPointCount * totalVars * sizeof(float));
 	for (int i = 0; i < validPointCount * totalVars; i++) {
 		meshStruct.reducedMesh[i] = tempMesh[i];
 	}
@@ -459,8 +459,8 @@ Mesh createRectilinearMesh_reduced_parallel
     //meshStruct.mapMesh = mapMesh; // Assuming mapMesh is already allocated
     meshStruct.validPointCount = validPointCount;
 	
-	meshStruct.meshMin = (double*)malloc(dimensions * sizeof(double));
-	meshStruct.meshMax = (double*)malloc(dimensions * sizeof(double));
+	meshStruct.meshMin = (float*)malloc(dimensions * sizeof(float));
+	meshStruct.meshMax = (float*)malloc(dimensions * sizeof(float));
 	for (int i = 0; i < dimensions; i++) {
 		meshStruct.meshMin[i] = meshMin[i];
 		meshStruct.meshMax[i] = meshMax[i];

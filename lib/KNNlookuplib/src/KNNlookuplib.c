@@ -5,22 +5,22 @@
 # include "KNNlookuplib.h"
 
 // Calculates the squared Euclidean distance between two points.
-// @param point1: The first point (array of doubles).
-// @param point2: The second point (array of doubles).
+// @param point1: The first point (array of floats).
+// @param point2: The second point (array of floats).
 // @param Ncv: The number of control variables (dimensions of the points).
 // @return: The squared Euclidean distance between point1 and point2.
-double distanceSquared
+float distanceSquared
 (
-    double point1[], 
-	double point2[], 
+    float point1[], 
+	float point2[], 
 	int Ncv
 )
 {
-    double dist = 0.0;
+    float dist = 0.0;
     // Loop over each dimension and add the squared difference
     // between the coordinates to the total distance.
     for (int i = 0; i < Ncv; i++) {
-        double diff = point1[i] - point2[i];
+        float diff = point1[i] - point2[i];
         dist += diff * diff;
     }
     return dist;  // Return the total squared distance
@@ -133,7 +133,7 @@ bool insertNeighborHeap
 void KNNSearch
 (
     Node* root, 
-	double queryPoint[], 
+	float queryPoint[], 
 	int depth, 
 	int Ncv, 
 	NeighborHeap* heap
@@ -152,7 +152,7 @@ void KNNSearch
     KNNSearch(closerBranch, queryPoint, depth + 1, Ncv, heap);
  
     // Calculate distance from the query point to the current node
-    double dist = distanceSquared(queryPoint, root->point, Ncv);
+    float dist = distanceSquared(queryPoint, root->point, Ncv);
     
     // Create a Neighbor struct for the current node
     Neighbor neighbor = { root, dist };
@@ -161,7 +161,7 @@ void KNNSearch
     insertNeighborHeap(heap, neighbor);
 
     // Check if we need to visit the farther branch
-    double radiusSquared = (queryPoint[cd] - root->point[cd]) * (queryPoint[cd] - root->point[cd]);
+    float radiusSquared = (queryPoint[cd] - root->point[cd]) * (queryPoint[cd] - root->point[cd]);
     if (heap->size < heap->capacity || radiusSquared < heap->elements[0].distance) {
         // Visit the farther branch if there's potential for closer neighbors
         KNNSearch(fartherBranch, queryPoint, depth + 1, Ncv, heap);
@@ -174,9 +174,9 @@ void KNNSearch
 
 void normalizeQueryPoint
 (
-    double *queryPoint, 
-	double *mins, 
-	double *maxs, 
+    float *queryPoint, 
+	float *mins, 
+	float *maxs, 
 	int Ncv
 )
 {
@@ -188,9 +188,9 @@ void normalizeQueryPoint
 
 void denormalizeQueryPoint
 (
-    double *queryPoint, 
-	double *mins, 
-	double *maxs, 
+    float *queryPoint, 
+	float *mins, 
+	float *maxs, 
 	int Ncv
 )
 {
@@ -204,7 +204,7 @@ void nearestNeighborSearch
 (
     Node* root, 
 	Neighbor *nearest, 
-	double queryPoint[], 
+	float queryPoint[], 
 	int depth, 
 	int Ncv
 )
@@ -225,8 +225,8 @@ void nearestNeighborSearch
 	nearestNeighborSearch(nextBranch, &tempNearest, queryPoint, depth + 1, Ncv);
 
 	// Calculate the squared distance from the query point to the current node
-	double dRoot = distanceSquared(queryPoint, root->point, Ncv);
-	double dBest = tempNearest.node ? tempNearest.distance : INFINITY;
+	float dRoot = distanceSquared(queryPoint, root->point, Ncv);
+	float dBest = tempNearest.node ? tempNearest.distance : INFINITY;
 	
 	// Check if the current node is closer than what we have found so far
 	if (dRoot < dBest) {
@@ -238,7 +238,7 @@ void nearestNeighborSearch
 	}
 		
 	// Check if we need to search the other branch
-	double radiusSquared = queryPoint[cd] - root->point[cd];
+	float radiusSquared = queryPoint[cd] - root->point[cd];
 	radiusSquared *= radiusSquared;
 
 	if (radiusSquared < nearest->distance) {
@@ -257,8 +257,8 @@ int NNlookupFGM
 (
     FGM *fgm, 
 	Node *KDTree, 
-	double *x, 
-	double *f
+	float *x, 
+	float *f
 )
 {
     // Normalize the query point using the same parameters used for the FGM data
@@ -287,8 +287,8 @@ int KNNlookupFGM_Interp
 (
     FGM *fgm, 
 	Node *KDTree, 
-	double *x, 
-	double *f, 
+	float *x, 
+	float *f, 
 	int K
 )
 {
@@ -306,8 +306,8 @@ int KNNlookupFGM_Interp
     KNNSearch(KDTree, x, 0, fgm->Ncv, neighborHeap);
 
     // Variables to store the weighted sum and total weight
-    double weightedSum[fgm->Nvar];
-    double totalWeight = 0.0;
+    float weightedSum[fgm->Nvar];
+    float totalWeight = 0.0;
 
     // Initialize weightedSum to 0
     for (int i = 0; i < fgm->Nvar; i++) {
@@ -316,8 +316,8 @@ int KNNlookupFGM_Interp
 
     // Loop through the neighbor heap
     for (int i = 0; i < neighborHeap->size; i++) {
-        double dist = neighborHeap->elements[i].distance;
-        double weight = 1.0 / (dist + 1e-10); // Adding a small constant to avoid division by zero
+        float dist = neighborHeap->elements[i].distance;
+        float weight = 1.0 / (dist + 1e-10); // Adding a small constant to avoid division by zero
 
         for (int j = 0; j < fgm->Nvar; j++) {
             weightedSum[j] += neighborHeap->elements[i].node->point[j] * weight;

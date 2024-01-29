@@ -11,8 +11,8 @@
 void normalizeFGM
 (
     FGM *fgm, 
-	double *mins, 
-	double *maxs
+	float *mins, 
+	float *maxs
 )
 {
     // Calculate the total number of points for dynamic dimensions
@@ -24,7 +24,7 @@ void normalizeFGM
     // Normalize each control variable individually
     for (int i = 0; i < totalPoints; i++) {
         for (int d = 0; d < fgm->Ncv; d++) {
-            double val = fgm->data[i * fgm->Nvar + d];
+            float val = fgm->data[i * fgm->Nvar + d];
             // Apply min-max normalization to scale the variable to [0, 1]
             fgm->data[i * fgm->Nvar + d] = (val - mins[d]) / (maxs[d] - mins[d]);
         }
@@ -36,7 +36,7 @@ void normalizeFGM
 // @return: A pointer to the newly created Node.
 Node* newNode
 (
-    double *point
+    float *point
 )
 {
     Node* temp = (Node *)malloc(sizeof(Node));
@@ -54,7 +54,7 @@ Node* newNode
 Node* insertRec
 (
     Node* root, 
-	double *point, 
+	float *point, 
 	int depth, 
 	int Ncv
 )
@@ -76,7 +76,7 @@ Node* insertRec
 // Helper function to print a point
 void printPoint
 (
-    double *point, 
+    float *point, 
 	int Ncv
 )
 {

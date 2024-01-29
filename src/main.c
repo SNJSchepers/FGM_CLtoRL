@@ -16,13 +16,13 @@ int main(void)
 		int K = 5;
 		
 		// Grid points of the rectilinear mesh (must be equal to the number of control variables
-		int Ngrid[] = {300, 100};
+		int Ngrid[] = {100,5,100};
 		
 		// Boolean to exclude points that lay outside of the curvilinear mesh to reduce memory
 		int memory_reduction = 1;
 	
 		// Distance threshold for which points are included in the rectlininear mesh
-		double threshold = 0.001;
+		float threshold = 0.001;
 
 		// Boolean for parallel processing
 		int parallel = 1;
@@ -36,7 +36,7 @@ int main(void)
 		Node* KDTree;
 	
 		// Read the FGM database
-		fgm = readFGM("data/input/database.fgm.2D");
+		fgm = readFGM("data/input/database.fgm.200_200_200.thermal");
 		
 		// Build the KD Tree
 		KDTree = buildKDTree(fgm);
@@ -50,13 +50,13 @@ int main(void)
 			if (memory_reduction) {
 				
 				// Start the mesh generation timer
-				double start = omp_get_wtime();
+				float start = omp_get_wtime();
 				
 				// Create the rectilinear mesh with memory reduction
 				Mesh mesh = createRectilinearMesh_reduced_parallel(fgm, KDTree, Ngrid, K, threshold);
 				
 				// End the mesh generation timer
-				double end = omp_get_wtime();
+				float end = omp_get_wtime();
 			
 				// Print elapsed time on screen
 				printf("Time to create mesh: %.2f seconds\n", end - start);
@@ -80,10 +80,10 @@ int main(void)
 				freeFGM(fgm);
 				
 				// Write the reduced FGM structure to a text file
-				writeFGM(fgm_RL_recuded, "data/output/database.fgm.RL_reduced");
+				writeFGM(fgm_RL_recuded, "data/output/database.fgm.3Dtest_RL_reduced");
 				
 				// Write the original mapping FGM structure to a text file
-				writeFGM_MAP(fgm_mapping, "data/output/database.fgm.RL_mapping");
+				writeFGM_MAP(fgm_mapping, "data/output/database.fgm.3Dtest_RL_mapping");
 				
 				// free the reduced FGM memory
 				freeFGM(fgm_RL_recuded);
@@ -95,13 +95,13 @@ int main(void)
 			} else {
 				
 				// Start the mesh generation timer
-				double start = omp_get_wtime();
+				float start = omp_get_wtime();
 				
 				// Create the rectilinear mesh without memory reduction
 				Mesh mesh = createRectilinearMesh_parallel(fgm, KDTree, Ngrid, K);
 
 				// End the mesh generation timer
-				double end = omp_get_wtime();
+				float end = omp_get_wtime();
 			
 				// Print elapsed time on screen
 				printf("Time to create mesh: %.2f seconds\n", end - start);
@@ -139,7 +139,7 @@ int main(void)
 				clock_t end = clock();
 			
 				// Print elapsed time on screen
-				printf("Time to create mesh: %.2f seconds\n", ((double)(end - start)) / CLOCKS_PER_SEC);
+				printf("Time to create mesh: %.2f seconds\n", ((float)(end - start)) / CLOCKS_PER_SEC);
 			
 				// Create new FGM object for the reduced rectilinear mesh
 				FGM *fgm_RL_recuded;
@@ -184,7 +184,7 @@ int main(void)
 				clock_t end = clock();
 				
 				// Print elapsed time on screen
-				printf("Time to create mesh: %.2f seconds\n", ((double)(end - start)) / CLOCKS_PER_SEC);
+				printf("Time to create mesh: %.2f seconds\n", ((float)(end - start)) / CLOCKS_PER_SEC);
 				
 				// Create new FGM instance for the rectilinear mesh
 				FGM *fgm_RL;

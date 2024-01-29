@@ -13,7 +13,7 @@
 // Structure representing a Neighbor
 typedef struct {
     Node* node;     // Pointer to a node in the k-d tree
-    double distance; // Distance from the query point to this node
+    float distance; // Distance from the query point to this node
 } Neighbor;
 
 // Structure representing a NeighborHeap
@@ -30,9 +30,9 @@ typedef struct {
 // @param Ncv: The number of control variables (dimensions).
 void normalizeQueryPoint
 (
-    double *queryPoint, 
-	double *mins, 
-	double *maxs, 
+    float *queryPoint, 
+	float *mins, 
+	float *maxs, 
 	int Ncv
 );
 
@@ -43,9 +43,9 @@ void normalizeQueryPoint
 // @param Ncv: The number of control variables (dimensions).
 void denormalizeQueryPoint
 (
-    double *queryPoint, 
-	double *mins, 
-	double *maxs, 
+    float *queryPoint, 
+	float *mins, 
+	float *maxs, 
 	int Ncv
 );
 
@@ -59,7 +59,7 @@ void nearestNeighborSearch
 (
     Node* root, 
 	Neighbor *nearest, 
-	double queryPoint[], 
+	float queryPoint[], 
 	int depth, 
 	int Ncv
 );
@@ -74,8 +74,8 @@ int NNlookupFGM
 (
     FGM *fgm, 
 	Node *KDTree, 
-	double *x, 
-	double *f
+	float *x, 
+	float *f
 );
 
 // Lookup the nearest neighbor in a KD Tree with interpolation and return the result in 'f'.
@@ -89,8 +89,8 @@ int KNNlookupFGM_Interp
 (
     FGM *fgm, 
 	Node *KDTree, 
-	double *x, 
-	double *f, 
+	float *x, 
+	float *f, 
 	int K
 );
 

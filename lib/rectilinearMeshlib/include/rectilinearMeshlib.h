@@ -14,11 +14,11 @@
 
 // Structure representing the rectinlinear mesh
 typedef struct {
-    double *reducedMesh;  // Pointer to the reduced mesh
+    float *reducedMesh;  // Pointer to the reduced mesh
     int *mapMesh;         // Pointer to the mapped mesh
     int validPointCount;  // Number of valid points in the reduced mesh
-	double *meshMin;
-	double *meshMax;
+	float *meshMin;
+	float *meshMax;
 } Mesh;
 
 // Function to create a rectilinear mesh.
@@ -74,7 +74,7 @@ Mesh createRectilinearMesh_reduced
 	Node* KDTree, 
 	int *Ngrid, 
 	int K, 
-	double threshold
+	float threshold
 );
 
 // Create a parallelized reduced rectilinear mesh from point cloud data, excluding points outside the cloud.
@@ -90,7 +90,7 @@ Mesh createRectilinearMesh_reduced_parallel
 	Node* KDTree, 
 	int *Ngrid, 
 	int K, 
-	double threshold
+	float threshold
 );
 
 #endif // RECTILINEARMESHLIB_H

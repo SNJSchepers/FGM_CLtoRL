@@ -15,15 +15,15 @@ FGM * readFGM
   
     int Ncv = 0;
     int *Ngrid = NULL;
-    double *gridpower = NULL;
+    float *gridpower = NULL;
     int Nvar = 0;
     char (*varname)[VAR_NAME_LENGTH];
-    double *data = NULL;
+    float *data = NULL;
 
     FGM *fgm = NULL;
   
     int i,j;
-    double f;
+    float f;
 
     // Open the file
     fid = fopen(filename, "r");
@@ -89,7 +89,7 @@ FGM * readFGM
     }
   
     // Allocate space for the data
-    data = malloc(sizeof(double) * Ntotal * Nvar);
+    data = malloc(sizeof(float) * Ntotal * Nvar);
     if (data == NULL) {
         fprintf(stderr, "Error: Unable to allocate space for data\n");
         exit(EXIT_FAILURE);
@@ -102,13 +102,13 @@ FGM * readFGM
     }
     for (i = 0; i < Ntotal; i++) {
         for (j = 0; j < Nvar; j++) {
-            fscanf(fid,"%lf",&f);
+            fscanf(fid,"%f",&f);
             data[i*Nvar + j] = f;
         }
     }
   
     // Allocate space for grid powers
-    gridpower = (double *)malloc(sizeof(double) * Ncv);
+    gridpower = (float *)malloc(sizeof(float) * Ncv);
     if (gridpower == NULL) {
         fprintf(stderr, "Error: Unable to allocate space for gridpower\n");
         exit(EXIT_FAILURE);
@@ -123,7 +123,7 @@ FGM * readFGM
     }
     else {
         for (i = 0; i < Ncv; i++) {
-            fscanf(fid,"%lf",&f);
+            fscanf(fid,"%f",&f);
             // If the power is equal to 1 then set it to a negative value
             if ( fabs(f-1.0) < 1.e-6 ) {
                 gridpower[i] = -1.0;
@@ -155,8 +155,8 @@ FGM * readFGM
     fgm->data = data;
 
     // Allocate memory for mins and maxs arrays
-    fgm->mins = malloc(fgm->Ncv * sizeof(double));
-    fgm->maxs = malloc(fgm->Ncv * sizeof(double));
+    fgm->mins = malloc(fgm->Ncv * sizeof(float));
+    fgm->maxs = malloc(fgm->Ncv * sizeof(float));
 
     // Check if memory allocation was successful
     if (!fgm->mins || !fgm->maxs) {
@@ -179,7 +179,7 @@ FGM * readFGM
     // Iterate over the data to find min and max values for each control variable
     for (int i = 0; i < totalPoints; i++) {
         for (int j = 0; j < fgm->Ncv; j++) {
-            double val = fgm->data[i * fgm->Nvar + j];
+            float val = fgm->data[i * fgm->Nvar + j];
             if (val < fgm->mins[j]) fgm->mins[j] = val;
             if (val > fgm->maxs[j]) fgm->maxs[j] = val;
         }
@@ -238,10 +238,10 @@ FGM *createFGM
 (
     int Ncv, 
 	int *Ngrid, 
-	double *gridpower, 
+	float *gridpower, 
 	int Nvar, 
 	char (*varname)[VAR_NAME_LENGTH], 
-	double *data
+	float *data
 )
 {
 	// Create new FGM instance
@@ -254,7 +254,7 @@ FGM *createFGM
 	// Populate the new FGM struct
     newFGM->Ncv = Ncv;
     newFGM->Ngrid = (int *)malloc(Ncv * sizeof(int));
-    newFGM->gridpower = (double *)malloc(Ncv * sizeof(double));
+    newFGM->gridpower = (float *)malloc(Ncv * sizeof(float));
     newFGM->Nvar = Nvar;
     newFGM->varname = (char (*)[VAR_NAME_LENGTH])malloc(Nvar * VAR_NAME_LENGTH * sizeof(char));
 	
@@ -264,7 +264,7 @@ FGM *createFGM
 	}
 	dataSize *= Nvar;
 
-    newFGM->data = (double *)malloc( dataSize * sizeof(double) );
+    newFGM->data = (float *)malloc( dataSize * sizeof(float) );
 	
     // Check for memory allocation failure for each array
     if (newFGM->Ngrid == NULL || newFGM->gridpower == NULL || newFGM->varname == NULL || newFGM->data == NULL) {
@@ -275,11 +275,11 @@ FGM *createFGM
 	
     // Copy data into the new FGM struct
     memcpy(newFGM->Ngrid, Ngrid, Ncv * sizeof(int));
-    memcpy(newFGM->gridpower, gridpower, Ncv * sizeof(double));
+    memcpy(newFGM->gridpower, gridpower, Ncv * sizeof(float));
     for (int i = 0; i < Nvar; i++) {
         strcpy(newFGM->varname[i], varname[i]);
     }
-    memcpy(newFGM->data, data, dataSize * sizeof(double));
+    memcpy(newFGM->data, data, dataSize * sizeof(float));
 
     return newFGM;
 }
@@ -288,9 +288,9 @@ FGM_MAP *createFGM_MAP
 (
     int Ncv, 
 	int *Ngrid, 
-	double *gridpower, 
-	double *mins, 
-	double *maxs, 
+	float *gridpower, 
+	float *mins, 
+	float *maxs, 
 	char (*varname)[VAR_NAME_LENGTH], 
 	int *data
 )
@@ -305,9 +305,9 @@ FGM_MAP *createFGM_MAP
 	// Populate the new FGM_MAP struct
     newFGM_MAP->Ncv = Ncv;
     newFGM_MAP->Ngrid = (int *)malloc(Ncv * sizeof(int));
-    newFGM_MAP->gridpower = (double *)malloc(Ncv * sizeof(double));
-	newFGM_MAP->mins = (double *)malloc(Ncv * sizeof(double));
-	newFGM_MAP->maxs = (double *)malloc(Ncv * sizeof(double));
+    newFGM_MAP->gridpower = (float *)malloc(Ncv * sizeof(float));
+	newFGM_MAP->mins = (float *)malloc(Ncv * sizeof(float));
+	newFGM_MAP->maxs = (float *)malloc(Ncv * sizeof(float));
     newFGM_MAP->Nvar = Ncv + 1;
     newFGM_MAP->varname = (char (*)[VAR_NAME_LENGTH])malloc(Ncv + 1 * VAR_NAME_LENGTH * sizeof(char));
 
@@ -328,10 +328,10 @@ FGM_MAP *createFGM_MAP
 
     // Copy data into the new FGM struct
     memcpy(newFGM_MAP->Ngrid, Ngrid, Ncv * sizeof(int));
-    memcpy(newFGM_MAP->gridpower, gridpower, Ncv * sizeof(double));
+    memcpy(newFGM_MAP->gridpower, gridpower, Ncv * sizeof(float));
 
-	memcpy(newFGM_MAP->mins, mins, Ncv * sizeof(double));
-	memcpy(newFGM_MAP->maxs, maxs, Ncv * sizeof(double));
+	memcpy(newFGM_MAP->mins, mins, Ncv * sizeof(float));
+	memcpy(newFGM_MAP->maxs, maxs, Ncv * sizeof(float));
 
     for (int i = 0; i < (Ncv + 1); i++) {
         strcpy(newFGM_MAP->varname[i], varname[i]);
@@ -378,7 +378,7 @@ int writeFGM
 	
 	// Write the fgm->gridpower values
 	for (int i = 0; i < fgm->Ncv; i++) {
-		fprintf(file, "%lf ", fgm->gridpower[i]); // Assuming gridpower is an array of doubles
+		fprintf(file, "%f ", fgm->gridpower[i]); // Assuming gridpower is an array of floats
 	}
 	fprintf(file, "\n"); // New line after the last gridpower value
 	
@@ -451,7 +451,7 @@ int writeFGM_MAP
 	
 	// Write the fgm->gridpower values
 	for (int i = 0; i < fgm->Ncv; i++) {
-		fprintf(file, "%lf ", fgm->gridpower[i]); // Assuming gridpower is an array of doubles
+		fprintf(file, "%f ", fgm->gridpower[i]); // Assuming gridpower is an array of floats
 	}
 	fprintf(file, "\n"); // New line after the last gridpower value
 
@@ -459,7 +459,7 @@ int writeFGM_MAP
 	
 	// Write the fgm->mins values
 	for (int i = 0; i < fgm->Ncv; i++) {
-		fprintf(file, "%lf ", fgm->mins[i]); // Assuming mins is an array of doubles
+		fprintf(file, "%f ", fgm->mins[i]); // Assuming mins is an array of floats
 	}
 	fprintf(file, "\n"); // New line after the last mins value
 
@@ -467,7 +467,7 @@ int writeFGM_MAP
 	
 	// Write the fgm->mins values
 	for (int i = 0; i < fgm->Ncv; i++) {
-		fprintf(file, "%lf ", fgm->maxs[i]); // Assuming maxs is an array of doubles
+		fprintf(file, "%f ", fgm->maxs[i]); // Assuming maxs is an array of floats
 	}
 	fprintf(file, "\n"); // New line after the last maxs value
 

@@ -33,24 +33,24 @@
 typedef struct {
     int Ncv; 			// Number of control variables
     int *Ngrid;			// Array storing the number of grid points for each control variable
-    double *gridpower; 	// Array storing grid power values
+    float *gridpower; 	// Array storing grid power values
     int Nvar;			// Number of variables
     char (*varname)[VAR_NAME_LENGTH]; // Array of variable names
-    double *data;		// Pointer to the data array
-    double *mins; 		// Array to store minimum values for each control variable
-    double *maxs; 		// Array to store maximum values for each control variable
+    float *data;		// Pointer to the data array
+    float *mins; 		// Array to store minimum values for each control variable
+    float *maxs; 		// Array to store maximum values for each control variable
 } FGM;
 
 // Structure representing the FGM mapping data
 typedef struct {
     int Ncv; 			// Number of control variables
     int *Ngrid;			// Array storing the number of grid points for each control variable
-    double *gridpower; 	// Array storing grid power values
+    float *gridpower; 	// Array storing grid power values
     int Nvar;			// Number of variables
     char (*varname)[VAR_NAME_LENGTH]; // Array of variable names
     int *data;		// Pointer to the data array
-	double *mins; 		// Array to store minimum values for each control variable
-    double *maxs; 		// Array to store maximum values for each control variable
+	float *mins; 		// Array to store minimum values for each control variable
+    float *maxs; 		// Array to store maximum values for each control variable
 } FGM_MAP;
 
 // Read FGM data from a file and return a pointer to the FGM struct.
@@ -96,10 +96,10 @@ FGM *createFGM
 (
     int Ncv, 
 	int *Ngrid, 
-	double *gridpower, 
+	float *gridpower, 
 	int Nvar, 
 	char (*varname)[VAR_NAME_LENGTH], 
-	double *data
+	float *data
 );
 
 // Create a new FGM_MAP struct and populate its members.
@@ -115,9 +115,9 @@ FGM_MAP *createFGM_MAP
 (
     int Ncv, 
 	int *Ngrid, 
-	double *gridpower, 
-	double *mins, 
-	double *maxs, 
+	float *gridpower, 
+	float *mins, 
+	float *maxs, 
 	char (*varname)[VAR_NAME_LENGTH], 
 	int *data
 );

@@ -59,7 +59,7 @@ Mesh createRectilinearMesh
         KNNlookupFGM_Interp(fgm, KDTree, queryPoint, variables, K);
         
         // Denormalize the query point back to original
-        denormalizeQueryPoint(queryPoint, fgm->mins, fgm->maxs, fgm->Ncv);
+        denormalizeQueryPoint(queryPoint, fgm);
         
         // Add this point to the mesh
         for (int k = 0; k < totalVars; k++) {
@@ -149,7 +149,7 @@ Mesh createRectilinearMesh_parallel
         KNNlookupFGM_Interp(fgm, KDTree, queryPoint, variables, K);
         
         // Denormalize the query point back to original
-        denormalizeQueryPoint(queryPoint, fgm->mins, fgm->maxs, fgm->Ncv);
+        denormalizeQueryPoint(queryPoint, fgm);
         
         // Add this point to the mesh
         for (int k = 0; k < totalVars; k++) {
@@ -248,24 +248,52 @@ Mesh createRectilinearMesh_reduced
 			mapMesh[i * (dimensions + 1) + j] = gridIdx;
 		}
 		
+		if (i == 882){
+			printf("%f\t%f\n",queryPoint[0],queryPoint[1]);
+			//exit(EXIT_FAILURE);
+		}
+		
 		// Normalize the query point using the same parameters used for the FGM data
-		normalizeQueryPoint(queryPoint, fgm->mins, fgm->maxs, fgm->Ncv);
+		normalizeQueryPoint(queryPoint, fgm);
+		
+		if (i == 882){
+			printf("%f\t%f\n",queryPoint[0],queryPoint[1]);
+			//exit(EXIT_FAILURE);
+		}
+		//printf("%f\t%f\n",queryPoint[0],queryPoint[1]);
 		
 		// Perform nearest neighbor search
 		Neighbor nearest;
 		nearestNeighborSearch(KDTree, &nearest, queryPoint, 0, dimensions);
 		
+		//printf("%f\t%f\n",nearest.node->point[0],nearest.node->point[1]);
+		
+		//printf("%f\n",nearest.distance);
+		
+		//exit(EXIT_FAILURE);
 		// Denormalize the query point back to original
-		denormalizeQueryPoint(queryPoint, fgm->mins, fgm->maxs, fgm->Ncv);
-
+		denormalizeQueryPoint(queryPoint, fgm);
+	
+		if (i == 882){
+			printf("%f\t%f\n",nearest.distance,threshold);
+			//exit(EXIT_FAILURE);
+		}
+		
 		// Check if distance exceeds the threshold
 		if (nearest.distance < threshold) {
 
 			// Perform the K-Nearest Neighbors lookup with inverse distance weighting interpolation
 			KNNlookupFGM_Interp(fgm, KDTree, queryPoint, variables, K);
 			
+			if (i == 882){
+				printf("%f\t%f\n",variables[0],variables[1]);
+				printf("%f\t%f\n",variables[8],variables[9]);
+				//exit(EXIT_FAILURE);
+			}
+		
+			
 			// Denormalize the query point back to original
-			denormalizeQueryPoint(queryPoint, fgm->mins, fgm->maxs, fgm->Ncv);
+			denormalizeQueryPoint(queryPoint, fgm);
 			
 			// Add this point to tempMesh and increment validPointCount
 			for (int k = 0; k < totalVars; k++) {
@@ -381,14 +409,13 @@ Mesh createRectilinearMesh_reduced_parallel
 		}
 		
 		// Normalize the query point using the same parameters used for the FGM data
-		normalizeQueryPoint(queryPoint, fgm->mins, fgm->maxs, fgm->Ncv);
+		normalizeQueryPoint(queryPoint, fgm);
 		
 		// Perform nearest neighbor search
-		
 		nearestNeighborSearch(KDTree, &nearest, queryPoint, 0, dimensions);
 		
 		// Denormalize the query point back to original
-		denormalizeQueryPoint(queryPoint, fgm->mins, fgm->maxs, fgm->Ncv);
+		denormalizeQueryPoint(queryPoint, fgm);
 
 		// Check if distance exceeds the threshold
 		if (nearest.distance < threshold) {
@@ -397,7 +424,7 @@ Mesh createRectilinearMesh_reduced_parallel
 			KNNlookupFGM_Interp(fgm, KDTree, queryPoint, variables, K);
 			
 			// Denormalize the query point back to original
-			denormalizeQueryPoint(queryPoint, fgm->mins, fgm->maxs, fgm->Ncv);
+			denormalizeQueryPoint(queryPoint, fgm);
 			
 			// Add this point to tempMesh
 			int localValidPointCount; // Local variable to store the current valid point count
@@ -416,19 +443,7 @@ Mesh createRectilinearMesh_reduced_parallel
 			}
 
 			mapMesh[i * (dimensions + 1) + dimensions] = localValidPointCount; // Adjusted for 0-based indexing
-		
-			// Add this point to tempMesh and increment validPointCount
-			/*for (int k = 0; k < totalVars; k++) {
-				if (k < dimensions){
-					tempMesh[validPointCount * totalVars + k] = queryPoint[k];
-				}
-				else {
-					tempMesh[validPointCount * totalVars + k] = variables[k];
-				}
-			}
-			validPointCount++;
 			
-			mapMesh[i * (dimensions + 1) + dimensions] = validPointCount - 1;*/ // -1 to adjust for 0-based indexing
 		} else {
 			// Store -1 in mapMesh to indicate the point is outside the threshold
 			mapMesh[i * (dimensions + 1) + dimensions] = -1;

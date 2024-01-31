@@ -184,7 +184,14 @@ FGM * readFGM
             if (val > fgm->maxs[j]) fgm->maxs[j] = val;
         }
     }
-
+	
+	fgm->maxNgrid = fgm->Ngrid[0];
+    for (int dim = 1; dim < fgm->Ncv; dim++) {
+        if (fgm->Ngrid[dim] > fgm->maxNgrid) {
+            fgm->maxNgrid = fgm->Ngrid[dim];
+        }
+    }
+	
     return fgm;
 };
 

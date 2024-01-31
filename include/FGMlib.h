@@ -33,6 +33,7 @@
 typedef struct {
     int Ncv; 			// Number of control variables
     int *Ngrid;			// Array storing the number of grid points for each control variable
+	int maxNgrid;     // Array to store the maximum number of grid points
     float *gridpower; 	// Array storing grid power values
     int Nvar;			// Number of variables
     char (*varname)[VAR_NAME_LENGTH]; // Array of variable names

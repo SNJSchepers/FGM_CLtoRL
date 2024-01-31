@@ -6,15 +6,28 @@
 
 // Normalizes the control variables in the FGM struct to a range of [0, 1].
 // @param fgm: Pointer to the FGM struct containing the data.
-// @param mins: Array containing the minimum value of each control variable.
-// @param maxs: Array containing the maximum value of each control variable.
 void normalizeFGM
 (
-    FGM *fgm, 
-	float *mins, 
-	float *maxs
+    FGM *fgm
 )
 {
+	// Calculate the total number of points for dynamic dimensions
+    /*int totalPoints = 1;
+    for (int dim = 0; dim < fgm->Ncv; dim++) {
+        totalPoints *= fgm->Ngrid[dim];
+    }
+
+    // Normalize each control variable individually
+    for (int i = 0; i < totalPoints; i++) {
+        for (int d = 0; d < fgm->Ncv; d++) {
+            float val = fgm->data[i * fgm->Nvar + d];
+            // Apply min-max normalization to scale the variable to [0, 1]
+            float normalizedVal = (val - fgm->mins[d]) / (fgm->maxs[d] - fgm->mins[d]);
+            // Apply additional scaling based on the ratio of grid points
+            fgm->data[i * fgm->Nvar + d] = normalizedVal * ((float)fgm->Ngrid[d] / (float)fgm->maxNgrid);
+        }
+    }*/
+	
     // Calculate the total number of points for dynamic dimensions
     int totalPoints = 1;
     for (int dim = 0; dim < fgm->Ncv; dim++) {
@@ -26,7 +39,7 @@ void normalizeFGM
         for (int d = 0; d < fgm->Ncv; d++) {
             float val = fgm->data[i * fgm->Nvar + d];
             // Apply min-max normalization to scale the variable to [0, 1]
-            fgm->data[i * fgm->Nvar + d] = (val - mins[d]) / (maxs[d] - mins[d]);
+            fgm->data[i * fgm->Nvar + d] = (val - fgm->mins[d]) / (fgm->maxs[d] - fgm->mins[d]);
         }
     }
 }
@@ -82,7 +95,7 @@ void printPoint
 {
     printf("(");
     for (int i = 0; i < Ncv; i++) {
-        printf("%lf", point[i]);
+        printf("%f", point[i]);
         if (i < Ncv - 1) printf(", ");
     }
     printf(")");
@@ -100,7 +113,7 @@ Node* buildKDTree
 	printf("\n Building K-d Tree...\n\n");
 	
     // Normalize the FGM data
-    normalizeFGM(fgm, fgm->mins, fgm->maxs);
+    normalizeFGM(fgm);
 
     // Build the KD Tree
     Node* root = NULL;

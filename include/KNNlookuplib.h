@@ -31,9 +31,7 @@ typedef struct {
 void normalizeQueryPoint
 (
     float *queryPoint, 
-	float *mins, 
-	float *maxs, 
-	int Ncv
+	FGM *fgm
 );
 
 // Denormalizes a query point back to its original scale using the min-max values.
@@ -43,10 +41,8 @@ void normalizeQueryPoint
 // @param Ncv: The number of control variables (dimensions).
 void denormalizeQueryPoint
 (
-    float *queryPoint, 
-	float *mins, 
-	float *maxs, 
-	int Ncv
+    float *queryPoint,
+	FGM *fgm
 );
 
 // Performs a nearest neighbor search in the k-d tree.

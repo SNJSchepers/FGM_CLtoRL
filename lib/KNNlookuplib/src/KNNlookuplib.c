@@ -166,6 +166,8 @@ void KNNSearch
         // Visit the farther branch if there's potential for closer neighbors
         KNNSearch(fartherBranch, queryPoint, depth + 1, Ncv, heap);
     }
+	
+	//printf("%f\t%f\n",root->point[0],root->point[1]);
 }
 
 /* --------------------------------------------------------------------------- *\
@@ -175,28 +177,40 @@ void KNNSearch
 void normalizeQueryPoint
 (
     float *queryPoint, 
-	float *mins, 
-	float *maxs, 
-	int Ncv
+	FGM *fgm
 )
 {
-    for (int d = 0; d < Ncv; d++) {
+    for (int d = 0; d < fgm->Ncv; d++) {
         // Apply min-max normalization to each dimension of the query point
-        queryPoint[d] = (queryPoint[d] - mins[d]) / (maxs[d] - mins[d]);
-    }
+        //queryPoint[d] = ((queryPoint[d] - fgm->mins[d])
+        //              / (fgm->maxs[d] - fgm->mins[d]))
+		//			  * ((float)fgm->Ngrid[d] / (float)fgm->maxNgrid);
+		// Apply min-max normalization to each dimension of the query point
+        //float normalizedVal = (queryPoint[d] - fgm->mins[d]) / (fgm->maxs[d] - fgm->mins[d]);
+        // Apply additional scaling
+        //queryPoint[d] = normalizedVal * ((float)fgm->Ngrid[d] / (float)fgm->maxNgrid);
+    	// Apply min-max normalization to each dimension of the query point
+        queryPoint[d] = (queryPoint[d] - fgm->mins[d]) / (fgm->maxs[d] - fgm->mins[d]);
+	}
 }
 
 void denormalizeQueryPoint
 (
-    float *queryPoint, 
-	float *mins, 
-	float *maxs, 
-	int Ncv
+    float *queryPoint,
+	FGM *fgm
 )
 {
-    for (int d = 0; d < Ncv; d++) {
+    for (int d = 0; d < fgm->Ncv; d++) {
         // Apply inverse min-max normalization to each dimension of the query point
-        queryPoint[d] = queryPoint[d] * (maxs[d] - mins[d]) + mins[d];
+        //queryPoint[d] = (queryPoint[d]
+        //              / ((float)fgm->Ngrid[d] / (float)fgm->maxNgrid))
+        //              * (fgm->maxs[d] - fgm->mins[d]) + fgm->mins[d];
+		// Reverse the additional scaling
+        //float scaledVal = queryPoint[d] / ((float)fgm->Ngrid[d] / (float)fgm->maxNgrid);
+        // Apply inverse min-max normalization to each dimension of the query point
+        //queryPoint[d] = scaledVal * (fgm->maxs[d] - fgm->mins[d]) + fgm->mins[d];
+		// Apply inverse min-max normalization to each dimension of the query point
+        queryPoint[d] = queryPoint[d] * (fgm->maxs[d] - fgm->mins[d]) + fgm->mins[d];
     }
 }
 
@@ -262,7 +276,7 @@ int NNlookupFGM
 )
 {
     // Normalize the query point using the same parameters used for the FGM data
-    normalizeQueryPoint(x, fgm->mins, fgm->maxs, fgm->Ncv);
+    normalizeQueryPoint(x, fgm);
 
 	// Create instance of neighbor
     Neighbor* nearest;
@@ -293,7 +307,7 @@ int KNNlookupFGM_Interp
 )
 {
     // Normalize the query point using the same parameters used for the FGM data
-    normalizeQueryPoint(x, fgm->mins, fgm->maxs, fgm->Ncv);
+    normalizeQueryPoint(x, fgm);
     
     // Create the neighbor heap with capacity K
     NeighborHeap* neighborHeap = createNeighborHeap(K);
@@ -316,7 +330,10 @@ int KNNlookupFGM_Interp
 
     // Loop through the neighbor heap
     for (int i = 0; i < neighborHeap->size; i++) {
+		//printf("%f\t%f\n", neighborHeap->elements[i].node->point[0],neighborHeap->elements[i].node->point[1]);
+		//printf("%f\t%f\n", neighborHeap->elements[i].node->point[8],neighborHeap->elements[i].node->point[9]);
         float dist = neighborHeap->elements[i].distance;
+		//printf("%f\n",dist);
         float weight = 1.0 / (dist + 1e-10); // Adding a small constant to avoid division by zero
 
         for (int j = 0; j < fgm->Nvar; j++) {

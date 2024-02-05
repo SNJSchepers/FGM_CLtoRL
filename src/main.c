@@ -16,7 +16,7 @@ int main(void)
 		int K = 6;
 		
 		// Grid points of the rectilinear mesh (must be equal to the number of control variables
-		int Ngrid[] = {300,10,50};
+		int Ngrid[] = {300,300};
 		
 		// Boolean to exclude points that lay outside of the curvilinear mesh to reduce memory
 		int memory_reduction = 1;
@@ -36,7 +36,7 @@ int main(void)
 		Node* KDTree;
 	
 		// Read the FGM database
-		fgm = readFGM("data/input/database.fgm.3D");
+		fgm = readFGM("data/input/database.fgm.2D.PV_h");
 		
 		// Build the KD Tree
 		KDTree = buildKDTree(fgm);
@@ -80,10 +80,10 @@ int main(void)
 				freeFGM(fgm);
 				
 				// Write the reduced FGM structure to a text file
-				writeFGM(fgm_RL_recuded, "data/output/database.fgm.3D_RL_reduced");
+				writeFGM(fgm_RL_recuded, "data/output/database.fgm.2D_RL_reduced");
 				
 				// Write the original mapping FGM structure to a text file
-				writeFGM_MAP(fgm_mapping, "data/output/database.fgm.3D_RL_mapping");
+				writeFGM_MAP(fgm_mapping, "data/output/database.fgm.2D_RL_mapping");
 				
 				// free the reduced FGM memory
 				freeFGM(fgm_RL_recuded);
@@ -116,7 +116,7 @@ int main(void)
 				freeFGM(fgm);
 				
 				// Write the new FGM to a text filelength
-				writeFGM(fgm_RL, "data/output/database.fgm.RL");
+				writeFGM(fgm_RL, "data/output/database.fgm.RL_2");
 				
 				// free the rectilinear fgm memory
 				freeFGM(fgm_RL);

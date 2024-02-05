@@ -5,11 +5,11 @@
 #SBATCH --nodes=1
 #SBATCH --ntasks=64
 #SBATCH --exclude=mech-computeA008,mech-computeB004
-#SBATCH --time=140:00:00
+#SBATCH --time=24:00:00
 #SBATCH --error=slurm-%j.err
 #SBATCH --output=slurm-%j.out
 #SBATCH --mail-type=ALL
-#SBATCH --mail-user=s.n.j.schepers@student.tue.nl
+#SBATCH --mail-user=
 
 echo "Converting curvilinear mesh to rectilinear mesh..."
 

@@ -182,14 +182,6 @@ void normalizeQueryPoint
 {
     for (int d = 0; d < fgm->Ncv; d++) {
         // Apply min-max normalization to each dimension of the query point
-        //queryPoint[d] = ((queryPoint[d] - fgm->mins[d])
-        //              / (fgm->maxs[d] - fgm->mins[d]))
-		//			  * ((float)fgm->Ngrid[d] / (float)fgm->maxNgrid);
-		// Apply min-max normalization to each dimension of the query point
-        //float normalizedVal = (queryPoint[d] - fgm->mins[d]) / (fgm->maxs[d] - fgm->mins[d]);
-        // Apply additional scaling
-        //queryPoint[d] = normalizedVal * ((float)fgm->Ngrid[d] / (float)fgm->maxNgrid);
-    	// Apply min-max normalization to each dimension of the query point
         queryPoint[d] = (queryPoint[d] - fgm->mins[d]) / (fgm->maxs[d] - fgm->mins[d]);
 	}
 }
@@ -202,14 +194,6 @@ void denormalizeQueryPoint
 {
     for (int d = 0; d < fgm->Ncv; d++) {
         // Apply inverse min-max normalization to each dimension of the query point
-        //queryPoint[d] = (queryPoint[d]
-        //              / ((float)fgm->Ngrid[d] / (float)fgm->maxNgrid))
-        //              * (fgm->maxs[d] - fgm->mins[d]) + fgm->mins[d];
-		// Reverse the additional scaling
-        //float scaledVal = queryPoint[d] / ((float)fgm->Ngrid[d] / (float)fgm->maxNgrid);
-        // Apply inverse min-max normalization to each dimension of the query point
-        //queryPoint[d] = scaledVal * (fgm->maxs[d] - fgm->mins[d]) + fgm->mins[d];
-		// Apply inverse min-max normalization to each dimension of the query point
         queryPoint[d] = queryPoint[d] * (fgm->maxs[d] - fgm->mins[d]) + fgm->mins[d];
     }
 }

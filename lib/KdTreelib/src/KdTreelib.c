@@ -11,22 +11,6 @@ void normalizeFGM
     FGM *fgm
 )
 {
-	// Calculate the total number of points for dynamic dimensions
-    /*int totalPoints = 1;
-    for (int dim = 0; dim < fgm->Ncv; dim++) {
-        totalPoints *= fgm->Ngrid[dim];
-    }
-
-    // Normalize each control variable individually
-    for (int i = 0; i < totalPoints; i++) {
-        for (int d = 0; d < fgm->Ncv; d++) {
-            float val = fgm->data[i * fgm->Nvar + d];
-            // Apply min-max normalization to scale the variable to [0, 1]
-            float normalizedVal = (val - fgm->mins[d]) / (fgm->maxs[d] - fgm->mins[d]);
-            // Apply additional scaling based on the ratio of grid points
-            fgm->data[i * fgm->Nvar + d] = normalizedVal * ((float)fgm->Ngrid[d] / (float)fgm->maxNgrid);
-        }
-    }*/
 	
     // Calculate the total number of points for dynamic dimensions
     int totalPoints = 1;

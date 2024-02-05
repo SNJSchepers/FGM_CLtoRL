@@ -248,49 +248,23 @@ Mesh createRectilinearMesh_reduced
 			mapMesh[i * (dimensions + 1) + j] = gridIdx;
 		}
 		
-		if (i == 882){
-			printf("%f\t%f\n",queryPoint[0],queryPoint[1]);
-			//exit(EXIT_FAILURE);
-		}
-		
 		// Normalize the query point using the same parameters used for the FGM data
 		normalizeQueryPoint(queryPoint, fgm);
 		
-		if (i == 882){
-			printf("%f\t%f\n",queryPoint[0],queryPoint[1]);
-			//exit(EXIT_FAILURE);
-		}
-		//printf("%f\t%f\n",queryPoint[0],queryPoint[1]);
 		
 		// Perform nearest neighbor search
 		Neighbor nearest;
 		nearestNeighborSearch(KDTree, &nearest, queryPoint, 0, dimensions);
-		
-		//printf("%f\t%f\n",nearest.node->point[0],nearest.node->point[1]);
-		
-		//printf("%f\n",nearest.distance);
-		
-		//exit(EXIT_FAILURE);
+
 		// Denormalize the query point back to original
 		denormalizeQueryPoint(queryPoint, fgm);
 	
-		if (i == 882){
-			printf("%f\t%f\n",nearest.distance,threshold);
-			//exit(EXIT_FAILURE);
-		}
 		
 		// Check if distance exceeds the threshold
 		if (nearest.distance < threshold) {
 
 			// Perform the K-Nearest Neighbors lookup with inverse distance weighting interpolation
 			KNNlookupFGM_Interp(fgm, KDTree, queryPoint, variables, K);
-			
-			if (i == 882){
-				printf("%f\t%f\n",variables[0],variables[1]);
-				printf("%f\t%f\n",variables[8],variables[9]);
-				//exit(EXIT_FAILURE);
-			}
-		
 			
 			// Denormalize the query point back to original
 			denormalizeQueryPoint(queryPoint, fgm);
